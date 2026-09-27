@@ -1,0 +1,8 @@
+{
+  "name": "MINIMUM",
+  "description": "An adaptive AI goal coach that finds the smallest behavior you will consistently perform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

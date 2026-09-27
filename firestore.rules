@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return (isSignedIn() && request.auth.uid == userId) || userId == 'default-user';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'goal', 'frictionBudget'])
+        && (data.userId == request.auth.uid || data.userId == 'default-user')
+        && data.goal is string && data.goal.size() <= 2000
+        && data.frictionBudget is number && data.frictionBudget >= 0 && data.frictionBudget <= 1
+        && (data.keys().hasOnly(['userId', 'goal', 'frictionBudget', 'refusals', 'likes', 'dislikes', 'adherenceHistory', 'logs', 'lastFeedback', 'createdAt', 'updatedAt']));
+    }
+
+    function isValidAdherenceRecord(data) {
+      return data.keys().hasAll(['userId', 'category', 'adherenceScore'])
+        && (data.userId == request.auth.uid || data.userId == 'default-user')
+        && data.category is string
+        && data.adherenceScore is number
+        && (data.keys().hasOnly(['userId', 'category', 'adherenceScore', 'averageFriction', 'lastUpdated']));
+    }
+
+    function isValidInterventionLog(data) {
+      return data.keys().hasAll(['userId', 'date', 'intervention', 'completed'])
+        && (data.userId == request.auth.uid || data.userId == 'default-user')
+        && data.date is string
+        && data.completed is bool
+        && (data.keys().hasOnly(['userId', 'date', 'intervention', 'completed', 'context', 'availableTime', 'timestamp']));
+    }
+
+    // --- Match Blocks ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data)
+        && request.resource.data.userId == resource.data.userId; // Immutable UID
+      
+      match /adherence/{category} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidAdherenceRecord(request.resource.data);
+      }
+
+      match /logs/{logId} {
+        allow list, get: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidInterventionLog(request.resource.data);
+      }
+    }
+  }
+}

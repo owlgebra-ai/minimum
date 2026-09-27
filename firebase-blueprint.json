@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User preferences and current behavioral model state.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "goal": { "type": "string", "maxLength": 500 },
+        "refusals": { "type": "array", "items": { "type": "string" } },
+        "likes": { "type": "array", "items": { "type": "string" } },
+        "dislikes": { "type": "array", "items": { "type": "string" } },
+        "frictionBudget": { "type": "number", "description": "Current available friction capacity (0-1)." },
+        "adherenceHistory": { "type": "array", "items": { "type": "object" }, "description": "Historical adherence per category" },
+        "logs": { "type": "array", "items": { "type": "object" }, "description": "Logged feedback history" },
+        "lastFeedback": { "type": "object", "description": "Last recorded feedback before and after state" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "goal", "frictionBudget"]
+    },
+    "AdherenceRecord": {
+      "title": "Adherence Record",
+      "description": "Historical adherence data for specific intervention categories.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "category": { "type": "string" },
+        "adherenceScore": { "type": "number" },
+        "averageFriction": { "type": "number" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "category", "adherenceScore"]
+    },
+    "InterventionLog": {
+      "title": "Intervention Log",
+      "description": "Logs of daily recommendations and user feedback.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "intervention": { "type": "object" },
+        "completed": { "type": "boolean" },
+        "context": { "type": "string" },
+        "availableTime": { "type": "integer" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "date", "intervention", "completed"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    },
+    "/users/{userId}/adherence/{category}": {
+      "schema": "AdherenceRecord",
+      "description": "Per-category adherence history"
+    },
+    "/users/{userId}/logs/{logId}": {
+      "schema": "InterventionLog",
+      "description": "Daily intervention history"
+    }
+  }
+}
