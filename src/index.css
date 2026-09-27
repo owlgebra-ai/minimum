@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-[#FBFBF9] text-slate-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3 {
+    @apply tracking-tight font-medium;
+  }
+}
+
+.pill-button {
+  @apply px-4 py-2 rounded-full border border-slate-200 transition-all active:scale-95;
+}
+
+.pill-button.active {
+  @apply bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-900/10;
+}
+
+.glass-panel {
+  @apply bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-2xl p-6 shadow-sm;
+}
